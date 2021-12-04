@@ -1,0 +1,20 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Theme.SecureChat" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="android:statusBarColor" tools:targetApi="l">@color/primary</item>
+    </style>
+
+    <style name="signIn_background_line">
+        <item name="android:background">#FFFFFF</item>
+    </style>
+
+    <style name="text_theme">
+        <item name="android:textColor">#FFFFFF</item>
+    </style>
+
+    <style name="create_new_account">
+        <item name="android:textColor">#4183EE</item>
+    </style>
+
+</resources>
