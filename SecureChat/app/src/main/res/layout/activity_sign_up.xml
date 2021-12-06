@@ -92,7 +92,7 @@
             android:id="@+id/inputName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Name"
+            android:hint="Full Name"
             app:errorEnabled="true"
             app:boxStrokeColor="@color/text_box_color"
             app:hintTextColor="@color/text_box_color"

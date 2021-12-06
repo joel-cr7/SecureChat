@@ -1,10 +1,14 @@
 package com.downloader.securechat.activities
 
 import android.content.Intent
-import android.net.Uri
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.hardware.Camera
+import android.hardware.Camera.CameraInfo
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
+import android.util.Base64
 import android.util.Patterns
 import android.view.View
 import android.widget.Toast
@@ -12,27 +16,26 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
-import com.bumptech.glide.Glide
 import com.downloader.securechat.daos.UserDao
 import com.downloader.securechat.databinding.ActivitySignUpBinding
-import com.downloader.securechat.models.User
+import com.downloader.securechat.utilities.CacheStorageManager
+import com.downloader.securechat.utilities.Constants
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
+import java.io.ByteArrayOutputStream
 import java.io.FileNotFoundException
+import java.util.Collections.rotate
+
 
 class SignUpActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySignUpBinding
-    private var userProfileImage: Uri? = null
+    private var encodedImage: String? = null
     private lateinit var authenticate: FirebaseAuth
     private lateinit var email: String
     private lateinit var name: String
     private lateinit var phoneNo: String
     private lateinit var password: String
+    private lateinit var cacheStorageManager: CacheStorageManager
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,16 +43,7 @@ class SignUpActivity : AppCompatActivity() {
         binding = ActivitySignUpBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        authenticate = Firebase.auth
-
-        val user = authenticate.currentUser
-
-        //if user already logged in move to MainActivity directly
-        if(user!=null){
-            finish()
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-        }
+        cacheStorageManager = CacheStorageManager(applicationContext)
 
         setTextChanges()
         setListeners()
@@ -89,6 +83,17 @@ class SignUpActivity : AppCompatActivity() {
     }
 
 
+    private fun encryptImage(bitmap: Bitmap): String{
+        val previewWidth = 150
+        val previewHeight = bitmap.height * previewWidth / bitmap.width
+        val previewBitmap = Bitmap.createScaledBitmap(bitmap, previewWidth, previewHeight, false)
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        previewBitmap.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream)
+        val bytes = byteArrayOutputStream.toByteArray()
+        return Base64.encodeToString(bytes, Base64.DEFAULT)
+    }
+
+
     private fun setListeners(){
         binding.textSignIn.setOnClickListener{
             onBackPressed()
@@ -121,21 +126,22 @@ class SignUpActivity : AppCompatActivity() {
         name = binding.inputName.editText?.text.toString()
         phoneNo = binding.phoneNo.editText?.text.toString()
 
-        //when user enters new email and password, authenticate by firebase email/password authentication
-        authenticate.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this){ task ->
-            if(task.isSuccessful){
-                val firebaseUser = authenticate.currentUser
-                updateUi(firebaseUser)
-            }else {
-                // If sign in fails, display a message to the user.
-                Log.w("TAG", "createUserWithEmail:failure", task.exception)
-                Toast.makeText(baseContext, "Authentication failed.", Toast.LENGTH_SHORT).show()
-                updateUi(null)
-            }
+        val userDAO = UserDao()
+        val addUserTask = userDAO.addUser(name, email, password, encodedImage, phoneNo)
+        addUserTask.addOnSuccessListener {
+            isLoading(false)
+            cacheStorageManager.setBooleanValue(Constants.KEY_IS_SIGNED_IN, true)
+            cacheStorageManager.setStringValue(Constants.KEY_USER_ID, it.id)
+            cacheStorageManager.setStringValue(Constants.KEY_NAME, name)
+            encodedImage?.let { it1 -> cacheStorageManager.setStringValue(Constants.KEY_IMAGE, it1) }
+            startActivity(Intent(applicationContext, MainActivity::class.java))
+            finish()
         }
-
+        .addOnFailureListener{
+            isLoading(false)
+            showToast("Failed Sign Up!!")
+        }
     }
-
 
     //registering activity for profile pic selection
     private val setProfileImage: ActivityResultLauncher<Intent> = registerForActivityResult(
@@ -143,10 +149,13 @@ class SignUpActivity : AppCompatActivity() {
     ) {
         if(it.resultCode == RESULT_OK){
             if(it.data!=null){
-                userProfileImage = it.data!!.data   //get the URI of the image selected
-                Log.d(this.toString(), "SignupActivity: the URI of image is: "+userProfileImage)
+                val userProfileImageUri = it.data!!.data   //get the URI of the image selected
                 try {
-                    Glide.with(this).load(userProfileImage).into(binding.profilePic)
+                    val inputStream = userProfileImageUri?.let { it1 -> contentResolver.openInputStream(it1) }
+                    val bitmap = BitmapFactory.decodeStream(inputStream)
+
+                    binding.profilePic.setImageBitmap(bitmap)
+                    encodedImage = encryptImage(bitmap)
                 }catch (e: FileNotFoundException){
                     e.printStackTrace()
                 }
@@ -158,7 +167,7 @@ class SignUpActivity : AppCompatActivity() {
     //checking validation of data entered
     private fun isValidSignUpDetails(): Boolean{
 
-        if(userProfileImage==null){
+        if(encodedImage==null){
             showToast("Select Profile Pic!")
             return false
         }
@@ -217,36 +226,6 @@ class SignUpActivity : AppCompatActivity() {
         else{
             binding.progressBar.visibility = View.INVISIBLE
             binding.buttonSignUp.visibility = View.VISIBLE
-        }
-    }
-
-
-    private fun updateUi(firebaseUser: FirebaseUser?) {
-        if(firebaseUser!=null){
-            val storage: FirebaseStorage = FirebaseStorage.getInstance()
-            val storageRef: StorageReference = storage.reference.child("profile_pics")
-
-            val childRef: StorageReference = storageRef.child(firebaseUser.uid)
-
-            //insert profile pic into cloud storage and call DAO function to add user into firestore
-            userProfileImage?.let {
-                childRef.putFile(it).addOnSuccessListener {
-                    childRef.downloadUrl.addOnSuccessListener { url->
-                        Log.d("image object", "updateUi:${url.toString()}")
-                        val user = User(firebaseUser.uid, name, url.toString(), email, phoneNo)
-                        Log.d("User", "updateUi: user created successfully!! "+user.displayName+ user.email+ user.imageUrl)
-                        val userDAO = UserDao()
-                        userDAO.addUser(user)
-                        Log.d("added", "updateUi: user added in firestore")
-                        startActivity(Intent(this, MainActivity::class.java))   //move to MainActivity
-                        finish()
-                    }
-                }
-            }
-        }
-        else{
-            isLoading(false)   //load the activity
-            Log.d(this.toString(), "updateUi: firebase user is null")
         }
     }
 

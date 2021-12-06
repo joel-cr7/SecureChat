@@ -2,6 +2,7 @@ package com.downloader.securechat.activities
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.ContactsContract
@@ -11,23 +12,43 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.downloader.securechat.Adapters.ContactsAdapter
 import com.downloader.securechat.databinding.ActivityContactListBinding
 import com.downloader.securechat.models.User
+import com.downloader.securechat.utilities.CacheStorageManager
 import com.google.firebase.firestore.FirebaseFirestore
 
-class ContactListActivity : AppCompatActivity() {
+class ContactListActivity : AppCompatActivity(), ContactsAdapter.onContactListener {
 
     private lateinit var binding: ActivityContactListBinding
     val usersContacts: HashMap<String, String> = HashMap()  //only users mobile contacts (store name and number in map)
     val user_FirebaseContacts: ArrayList<User> = ArrayList()   //users saved contacts which are also in firebase
+    private lateinit var cacheStorageManager: CacheStorageManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityContactListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        cacheStorageManager = CacheStorageManager(applicationContext)
+
+        setListeners()
         checkContactPermission()    //checking if permission is given to access contacts
 
+    }
+
+
+    private fun setListeners(){
+        binding.imageBack.setOnClickListener{
+            onBackPressed()
+        }
+    }
+
+
+
+    private fun showErrorMessage(){
+        binding.errorMessage.text = String.format("%s", "No contacts available")
+        binding.errorMessage.visibility = View.VISIBLE
     }
 
 
@@ -100,26 +121,48 @@ class ContactListActivity : AppCompatActivity() {
     //get all contacts from firebase and filter mutual contacts of user and firebase and display them to user
     private fun getFirebaseContactList(usersContacts: HashMap<String, String>) {
         val db = FirebaseFirestore.getInstance()
-        val userCollection = db.collection("users")
+        val userCollection = db.collection("Users")
         userCollection.get().addOnSuccessListener {
+            loading(false)
+            //iterate through all the users documents one by one
+            Log.d(this.toString(), "getFirebaseContactList: executed "+it.documents)
             for(document in it){
-                val user = document.toObject(User::class.java)
-                val number = user.phone_number
+                val user_number = document.getString("Phone No")
 
-                Log.d(this.toString(), "getFirebaseContactList: phoneno "+number)
 
+                Log.d(this.toString(), "getFirebaseContactList: phoneno "+user_number)
+
+                //iterate through every contact of local storage of user
                 for (contact in usersContacts) {
                     val key = contact.key
                     Log.d(this.toString(), "getFirebaseContactList: the key is : "+key+" value is :"+usersContacts[key])
 
                     //compare phone no. of users contacts and phone no. of firebase if both are same put it in an arraylist and display to user
-                    if (usersContacts[key] == number) {
+                    if (usersContacts[key] == user_number) {
+                        val user_name = document.getString("Name")
+                        val user_image = document.getString("Encrypted Image")
                         Log.d(this.toString(), "getFirebaseContactList: match found "+usersContacts[key])
-                        user_FirebaseContacts.add(user)
+                        val user_token = document.getString("fcmToken")
+                        Log.d(this.toString(), "getFirebaseContactList: token is: "+user_token)
+                        if(user_name!=null && user_image!=null && user_number!=null){
+                            if(user_token==null){
+                                user_FirebaseContacts.add(User(user_name, user_image, user_number, "", document.id))
+                            }else{
+                                user_FirebaseContacts.add(User(user_name, user_image, user_number, user_token, document.id))
+                            }
+                        }
                     }
                 }
             }
-            Log.d(this.toString(), "getFirebaseContactList: mutual contacts are: "+user_FirebaseContacts[0].displayName+": "+user_FirebaseContacts[0].phone_number+", "+user_FirebaseContacts[1].phone_number+": "+user_FirebaseContacts[1].displayName)
+
+            if(user_FirebaseContacts.size > 0){
+                val contactsAdapter = ContactsAdapter(user_FirebaseContacts, this)
+                binding.contactsRecyclerView.adapter = contactsAdapter
+                binding.contactsRecyclerView.visibility = View.VISIBLE
+            }
+            else{
+                showErrorMessage()
+            }
         }
         .addOnFailureListener { exception ->
             Toast.makeText(this, "failed to get contacts", Toast.LENGTH_SHORT).show()
@@ -138,6 +181,14 @@ class ContactListActivity : AppCompatActivity() {
         else{
             Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    //method of interface to handle clicks on each contact in the recyclerview
+    override fun onContactClicked(user: User) {
+        val intent = Intent(applicationContext, UserChatActivity::class.java)
+        intent.putExtra("user", user)   //passing the user object with intent
+        startActivity(intent)
+        finish()
     }
 
 

@@ -3,7 +3,7 @@
     package="com.downloader.securechat">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <application
         android:allowBackup="true"
@@ -12,7 +12,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SecureChat">
-        <activity android:name=".activities.ContactListActivity"></activity>
+        <activity
+            android:name=".activities.UserChatActivity"
+            android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".activities.ContactListActivity" />
         <activity
             android:name=".activities.SignUpActivity"
             android:windowSoftInputMode="adjustResize" />

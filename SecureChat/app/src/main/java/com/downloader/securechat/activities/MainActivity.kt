@@ -1,72 +1,44 @@
 package com.downloader.securechat.activities
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Base64
+import android.util.Log
 import android.widget.Toast
-import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
-import com.downloader.securechat.R
+import androidx.appcompat.app.AppCompatActivity
 import com.downloader.securechat.daos.UserDao
 import com.downloader.securechat.databinding.ActivityMainBinding
-import com.downloader.securechat.models.User
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.ktx.Firebase
+import com.downloader.securechat.utilities.CacheStorageManager
+import com.downloader.securechat.utilities.Constants
 import com.google.firebase.messaging.FirebaseMessaging
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
-import java.util.*
-import kotlin.collections.HashMap
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var authenticate: FirebaseAuth
-    private lateinit var firebaseUser: FirebaseUser
+    private lateinit var cacheStorageManager: CacheStorageManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        authenticate = Firebase.auth
-        firebaseUser = authenticate.currentUser!!   //here current user cant be null
+        cacheStorageManager = CacheStorageManager(applicationContext)
+
+        get_FCM_Token()
+
+        loadUserDetails()
 
         setListeners()
 
-        lifecycleScope.launch(Dispatchers.IO){
-            loadUserDetails()
-            getToken()
-        }
     }
 
 
     private fun setListeners(){
         //logout button
         binding.logout.setOnClickListener{
-
-            lifecycleScope.launch(Dispatchers.IO){
-                signOut()
-                FirebaseAuth.getInstance().signOut()
-            }
-
-            //each time the user logout and tries to login again then the gmail chooser must popup
-            //so completely log out the user,
-            GoogleSignIn.getClient(
-                    this,
-                    GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
-            ).signOut()
-            Toast.makeText(this, "Logged Out", Toast.LENGTH_SHORT).show()
-            startActivity(Intent(this, SignInActivity::class.java))
-            finish()
+            signOut()
         }
 
         binding.fabNewContact.setOnClickListener{
@@ -80,41 +52,52 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private suspend fun loadUserDetails(){
-        val userDAO = UserDao()
-        val user = userDAO.getUser(firebaseUser.uid).await().toObject(User::class.java)!!
-        withContext(Dispatchers.Main){
-            binding.name.text = user.displayName
-            if(user.imageUrl != ""){
-                Glide.with(this@MainActivity).load(user.imageUrl).into(binding.profilePic)
+    private fun loadUserDetails(){
+        val profilePic = cacheStorageManager.getStringValue(Constants.KEY_IMAGE)?.let { decryptProfilePic(it) }
+        binding.profilePic.setImageBitmap(profilePic)
+        binding.name.text = cacheStorageManager.getStringValue(Constants.KEY_NAME)
+    }
+
+
+    private fun decryptProfilePic(encryptedProfilePic: String): Bitmap{
+        val bytes = Base64.decode(encryptedProfilePic, Base64.DEFAULT)
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+    }
+
+
+
+
+    //get FCM(firebase cloud messaging) token used for messaging
+    private fun get_FCM_Token(){
+        FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+            val userDao = UserDao()
+            val task = cacheStorageManager.getStringValue(Constants.KEY_USER_ID)?.let { userDao.update_FCM_Token(token, it) }
+            Log.d(this.toString(), "getToken: received token: $token")
+            if (task != null) {
+                task.addOnFailureListener{
+                    showToast("Failed Token Update")
+                }
             }
         }
     }
 
 
-    //get the FCM(firebase cloud messaging) token used for messaging
-    private suspend fun getToken(){
-        val token = FirebaseMessaging.getInstance().token.await()
-        update_FCM_Token(token)
-    }
-
-
-    //add the token to firestore document of the user
-    private suspend fun update_FCM_Token(token: String){
-        val dbInstance = FirebaseFirestore.getInstance()
-        val docRef = dbInstance.collection("users").document(firebaseUser.uid)     //finding firestore document of the current user
-
-        docRef.update("fcmToken", token).await()   //inserting the token
-    }
-
-
     //delete the token from the firestore document of the user
-    private suspend fun signOut(){
-        val dbInstance = FirebaseFirestore.getInstance()
-        val docRef = dbInstance.collection("users").document(firebaseUser.uid)    //finding firestore document of the current user
-        val updates: HashMap<String, Any> = HashMap()
-        updates["fcmToken"] = FieldValue.delete()     //The fcmToken from firestore document of the current user will be deleted
-        docRef.update(updates as Map<String, Any>).await()
+    private fun signOut(){
+        val userDao = UserDao()
+        val task = cacheStorageManager.getStringValue(Constants.KEY_USER_ID)?.let { userDao.delete_FCM_Token(it) }
+
+        if (task != null) {
+            task.addOnSuccessListener {
+                cacheStorageManager.clearCache()
+                showToast("Signed out")
+                startActivity(Intent(this, SignInActivity::class.java))
+                finish()
+            }
+            .addOnFailureListener{
+                showToast("Failed to Sign out")
+            }
+        }
     }
 
 }

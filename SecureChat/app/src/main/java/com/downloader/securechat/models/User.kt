@@ -1,10 +1,11 @@
 package com.downloader.securechat.models
 
+import java.io.Serializable
 
-class User(
-        val userId: String= "",
+
+class User (
         val displayName: String= "",
-        val imageUrl: String = "",
-        val email:String = "",
+        val encodedImage: String = "",
         val phone_number: String = "",
-        val token: String = "", )
+        var token: String = "",
+        val id: String = "") : Serializable

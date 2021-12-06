@@ -76,7 +76,6 @@ dependencies {
     //Firebase
     implementation 'com.google.firebase:firebase-messaging:23.0.0'
     implementation 'com.google.firebase:firebase-firestore:24.0.0'
-    implementation 'com.google.firebase:firebase-storage:20.0.0'
     implementation 'com.google.firebase:firebase-auth-ktx:21.0.1'
 
     //MultiDex (dalvik executable limits the methods, to exceed this configure file with multidex)
