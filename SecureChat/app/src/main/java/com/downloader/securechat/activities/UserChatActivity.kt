@@ -5,9 +5,9 @@ import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Base64
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
 import com.downloader.securechat.Adapters.ChatAdapter
 import com.downloader.securechat.daos.ChatDao
+import com.downloader.securechat.daos.RecentConversationsDao
 import com.downloader.securechat.databinding.ActivityUserChatBinding
 import com.downloader.securechat.models.ChatMessage
 import com.downloader.securechat.models.User
@@ -19,7 +19,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
-class UserChatActivity : AppCompatActivity() {
+class UserChatActivity : BaseActivity() {
 
     private lateinit var binding: ActivityUserChatBinding
     private lateinit var cacheStorageManager: CacheStorageManager
@@ -27,6 +27,8 @@ class UserChatActivity : AppCompatActivity() {
     private lateinit var chatAdapter: ChatAdapter
     private lateinit var database: FirebaseFirestore
     private lateinit var selectedUser: User    //this is the user that is selected from the list of contacts
+    private var conversationId: String? = null
+    private var isReceiverAvailable = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,10 +50,31 @@ class UserChatActivity : AppCompatActivity() {
 
         binding.layoutSend.setOnClickListener{
             val chatDao = ChatDao()
+            val recentConversationsDao = RecentConversationsDao()
+
             val senderId = cacheStorageManager.getStringValue(Constants.KEY_USER_ID)!!   //the user should be loggedIn to reach chat activity, so the userId cant be null
             val msg = binding.inputMessage.text.toString()
             chatDao.addMessage(senderId, selectedUser.id, msg, Date())
+
+
+            //this code is to add this user with whom you are chatting on the main chatActivity
+            //so this is to create a conversation collection on firestore so that next time this user will appear on main chat activity
+
+            if(conversationId!=null){
+                //this means the user with whom you are chatting is already present in conversations collection on firestore,
+                //so only update the last message to show it on main chat activity
+                recentConversationsDao.updateConversation(binding.inputMessage.text.toString(), conversationId!!)
+            }
+            else{
+                //this means you are chatting with this user first time so add the conversation to firestore
+                val docRef = recentConversationsDao.addConversations(cacheStorageManager, selectedUser, binding.inputMessage.text.toString())
+                docRef.addOnSuccessListener {
+                    conversationId = it.id
+                }
+            }
+
             binding.inputMessage.text = null
+
         }
     }
 
@@ -134,6 +157,11 @@ class UserChatActivity : AppCompatActivity() {
                 binding.chatRecyclerView.visibility = View.VISIBLE
             }
             binding.progressBar.visibility = View.GONE
+
+            //check for any conversations if 'conversationId' is null
+            if(conversationId==null){
+                checkForConversations()
+            }
         }
     }
 
@@ -149,5 +177,58 @@ class UserChatActivity : AppCompatActivity() {
         return SimpleDateFormat("MMMM dd, yyyy - hh:mm a", Locale.getDefault()).format(date)
     }
 
+
+    //checks for any conversations
+    private fun checkForConversations(){
+        //for a conversation to be between two users the chatMessages must not be null
+        if(chatMessages.size != 0){
+            checkForConversationsRemotely(cacheStorageManager.getStringValue(Constants.KEY_USER_ID)!!, selectedUser.id)
+            checkForConversationsRemotely(selectedUser.id, cacheStorageManager.getStringValue(Constants.KEY_USER_ID)!!)
+        }
+    }
+
+
+    //this function is to get conversation collection from firestore so that we can show recent conversations on the main chatActivity
+    private fun checkForConversationsRemotely(senderId: String, receiverId: String) {
+        val recentConversationsDao = RecentConversationsDao()
+        val task = recentConversationsDao.checkForConversationsRemotely(senderId, receiverId)
+
+        task.addOnCompleteListener{
+            if(it.isSuccessful && it.result !=null && it.result.documents.size > 0){
+                //if any conversation is found then set 'conversationId' as that document Id
+                val documentSnapshot = it.result.documents[0]
+                conversationId = documentSnapshot.id
+            }
+        }
+    }
+
+
+    //check availability of receiver ie. if online or offline
+    private fun listenAvailabilityOfReceiver(){
+        database.collection("Users").document(selectedUser.id)
+            .addSnapshotListener(EventListener{ documentSnapshot: DocumentSnapshot?, firebaseFirestoreException: FirebaseFirestoreException? ->
+                if(firebaseFirestoreException!=null){
+                    return@EventListener
+                }
+                if(documentSnapshot!=null){
+                    if(documentSnapshot.getLong("Availability")!=null){
+                        val availability =
+                            Objects.requireNonNull(documentSnapshot.getLong("Availability"))?.toInt()
+                        isReceiverAvailable = availability == 1
+                    }
+                }
+                if(isReceiverAvailable){
+                    binding.textAvailability.visibility = View.VISIBLE
+                }else{
+                    binding.textAvailability.visibility = View.GONE
+                }
+            })
+    }
+
+
+    override fun onResume() {
+        super.onResume()
+        listenAvailabilityOfReceiver()
+    }
 }
 

@@ -1,6 +1,8 @@
 package com.downloader.securechat.daos
 
+import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.QuerySnapshot
 import java.util.*
 import kotlin.collections.HashMap
 

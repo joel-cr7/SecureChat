@@ -9,7 +9,6 @@ import android.provider.ContactsContract
 import android.util.Log
 import android.view.View
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.downloader.securechat.Adapters.ContactsAdapter
@@ -18,7 +17,7 @@ import com.downloader.securechat.models.User
 import com.downloader.securechat.utilities.CacheStorageManager
 import com.google.firebase.firestore.FirebaseFirestore
 
-class ContactListActivity : AppCompatActivity(), ContactsAdapter.onContactListener {
+class ContactListActivity : BaseActivity(), ContactsAdapter.onContactListener {
 
     private lateinit var binding: ActivityContactListBinding
     val usersContacts: HashMap<String, String> = HashMap()  //only users mobile contacts (store name and number in map)

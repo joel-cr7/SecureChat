@@ -20,7 +20,7 @@ class ContactsAdapter(contactList: ArrayList<User>, onContactListener: onContact
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ContactsViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_single_contact, parent, false)
-        return ContactsViewHolder(view, contactListener)
+        return ContactsViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ContactsViewHolder, position: Int) {
@@ -39,7 +39,7 @@ class ContactsAdapter(contactList: ArrayList<User>, onContactListener: onContact
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
     }
 
-    inner class ContactsViewHolder(itemView: View, contactListener: onContactListener) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
+    inner class ContactsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
         val binding = ItemSingleContactBinding.bind(itemView)
 
         init {

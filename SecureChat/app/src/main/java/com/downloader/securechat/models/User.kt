@@ -4,8 +4,8 @@ import java.io.Serializable
 
 
 class User (
-        val displayName: String= "",
-        val encodedImage: String = "",
-        val phone_number: String = "",
+        var displayName: String= "",
+        var encodedImage: String = "",
+        var phone_number: String = "",
         var token: String = "",
-        val id: String = "") : Serializable
+        var id: String = "") : Serializable

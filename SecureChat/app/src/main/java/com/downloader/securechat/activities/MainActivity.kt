@@ -6,18 +6,25 @@ import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Base64
 import android.util.Log
+import android.view.View
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import com.downloader.securechat.Adapters.RecentConversationsAdapter
 import com.downloader.securechat.daos.UserDao
 import com.downloader.securechat.databinding.ActivityMainBinding
+import com.downloader.securechat.models.RecentConversationChatMessage
+import com.downloader.securechat.models.User
 import com.downloader.securechat.utilities.CacheStorageManager
 import com.downloader.securechat.utilities.Constants
+import com.google.firebase.firestore.*
 import com.google.firebase.messaging.FirebaseMessaging
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity(), RecentConversationsAdapter.onConversationListener {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var cacheStorageManager: CacheStorageManager
+    private lateinit var recentConversations: ArrayList<RecentConversationChatMessage>
+    private lateinit var recentConversationsAdapter: RecentConversationsAdapter
+    private lateinit var database: FirebaseFirestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,12 +33,24 @@ class MainActivity : AppCompatActivity() {
 
         cacheStorageManager = CacheStorageManager(applicationContext)
 
+        initVariables()
+
         get_FCM_Token()
 
         loadUserDetails()
 
         setListeners()
 
+        listenConversationsFromFirestore()
+
+    }
+
+
+    private fun initVariables(){
+        recentConversations = ArrayList()
+        recentConversationsAdapter = RecentConversationsAdapter(recentConversations, this)
+        binding.conversationsRecyclerView.adapter = recentConversationsAdapter
+        database = FirebaseFirestore.getInstance()
     }
 
 
@@ -66,6 +85,111 @@ class MainActivity : AppCompatActivity() {
 
 
 
+    private fun listenConversationsFromFirestore(){
+        //applying listener to both the users ie. both the users chatting
+        database.collection("Conversations")
+            .whereEqualTo("SenderId", cacheStorageManager.getStringValue(Constants.KEY_USER_ID))
+            .addSnapshotListener(changeEventListener())
+
+        database.collection("Conversations")
+            .whereEqualTo("ReceiverId", cacheStorageManager.getStringValue(Constants.KEY_USER_ID))
+            .addSnapshotListener(changeEventListener())
+
+    }
+
+
+
+    //this listens to any changes in the document (this is to show the users that you have recently chatted with on thr main chatActivity)
+    inner class changeEventListener : EventListener<QuerySnapshot> {
+
+        override fun onEvent(value: QuerySnapshot?, error: FirebaseFirestoreException?) {
+            if (error != null) {
+                return
+            }
+            if (value != null) {
+                for (documentChange in value.documentChanges){
+
+                    //checking if any 'conversation' is added to firestore
+                    if(documentChange.type == DocumentChange.Type.ADDED){
+
+                        val senderId = documentChange.document.getString("SenderId")!!
+                        val receiverId = documentChange.document.getString("ReceiverId")!!
+
+                        if(cacheStorageManager.getStringValue(Constants.KEY_USER_ID).equals(senderId)){
+
+                            //creating the 'recentConversationChatMessage' object and adding to adapter
+                            //below 'receiver' means the person with whom you have chatted
+                            val receiverProfilePic =  documentChange.document.getString("ReceiverImage")!!
+                            val receiverName =  documentChange.document.getString("ReceiverName")!!
+                            val conversationId =  documentChange.document.getString("ReceiverId")!!
+                            val lastMessage = documentChange.document.getString("LastMessage")!!
+                            val dateObject = documentChange.document.getDate("TimeStamp")!!
+
+                            val recentConversationChatMessage = RecentConversationChatMessage(
+                                senderId,
+                                receiverId,
+                                lastMessage,
+                                dateObject,
+                                conversationId,
+                                receiverName,
+                                receiverProfilePic
+                            )
+                            recentConversations.add(recentConversationChatMessage)
+
+                        }
+                        else{
+
+                            //creating the 'recentConversationChatMessage' object and adding to adapter
+                            val senderProfilePic =  documentChange.document.getString("SenderImage")!!
+                            val senderName =  documentChange.document.getString("SenderName")!!
+                            val conversationId =  documentChange.document.getString("SenderId")!!
+                            val lastMessage = documentChange.document.getString("LastMessage")!!
+                            val dateObject = documentChange.document.getDate("TimeStamp")!!
+
+                            val recentConversationChatMessage = RecentConversationChatMessage(
+                                senderId,
+                                receiverId,
+                                lastMessage,
+                                dateObject,
+                                conversationId,
+                                senderName,
+                                senderProfilePic
+                            )
+                            recentConversations.add(recentConversationChatMessage)
+
+                        }
+                    }
+
+                    //checking for modifications in 'conversations' document in firestore so that we can show the latest message on main chatActivity
+                    else if(documentChange.type == DocumentChange.Type.MODIFIED){
+
+                        //looping through the arrayList
+                        for(conversation in recentConversations){
+
+                            val senderId = documentChange.document.getString("SenderId")
+                            val receiverId = documentChange.document.getString("ReceiverId")
+                            if(conversation.senderId == senderId && conversation.receiverId == receiverId){
+                                //updating the latestMessage and its timestamp
+                                conversation.message = documentChange.document.getString("LastMessage")!!
+                                conversation.dateObject = documentChange.document.getDate("TimeStamp")!!
+                                break
+                            }
+
+                        }
+
+                    }
+                }
+
+                recentConversations.sortWith { obj1, obj2 -> obj1.dateObject.compareTo(obj2.dateObject) }
+                recentConversationsAdapter.notifyDataSetChanged()
+                binding.conversationsRecyclerView.visibility = View.VISIBLE
+                binding.conversationsRecyclerView.smoothScrollToPosition(0)
+                binding.progressBar.visibility = View.GONE
+            }
+        }
+    }
+
+
 
     //get FCM(firebase cloud messaging) token used for messaging
     private fun get_FCM_Token(){
@@ -98,6 +222,12 @@ class MainActivity : AppCompatActivity() {
                 showToast("Failed to Sign out")
             }
         }
+    }
+
+    override fun onConversationClicked(user: User) {
+        val intent = Intent(applicationContext, UserChatActivity::class.java)
+        intent.putExtra("user", user)
+        startActivity(intent)
     }
 
 }
