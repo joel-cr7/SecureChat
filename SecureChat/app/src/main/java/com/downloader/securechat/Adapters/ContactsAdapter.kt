@@ -27,7 +27,11 @@ class ContactsAdapter(contactList: ArrayList<User>, onContactListener: onContact
         val user = contacts[position]
         holder.binding.displayName.text = user.displayName
         holder.binding.displayNumber.text = user.phone_number
-        Glide.with(holder.binding.profilePic.context).load(decodeProfilePic(user.encodedImage)).into(holder.binding.profilePic)
+        Glide.with(holder.binding.profilePic.context).load(user.encodedImage?.let {
+            decodeProfilePic(
+                it
+            )
+        }).into(holder.binding.profilePic)
     }
 
     override fun getItemCount(): Int {

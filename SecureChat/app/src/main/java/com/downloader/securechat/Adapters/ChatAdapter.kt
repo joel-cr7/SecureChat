@@ -13,7 +13,7 @@ import com.downloader.securechat.models.ChatMessage
 class ChatAdapter(Messages: ArrayList<ChatMessage>, ProfilePic: Bitmap, senderID: String): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val chatMessages: ArrayList<ChatMessage> = Messages
-    private val receiverProfilePic: Bitmap = ProfilePic
+    private var receiverProfilePic: Bitmap? = ProfilePic
     private val senderId: String = senderID
 
     //variables to indicate whom the message is from
@@ -22,6 +22,9 @@ class ChatAdapter(Messages: ArrayList<ChatMessage>, ProfilePic: Bitmap, senderID
         val VIEW_TYPE_RECEIVED = 2
     }
 
+    fun setReceiverProfilePic(bitmap: Bitmap?){
+        receiverProfilePic = bitmap
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         //returning appropriate viewHolders according to the viewType
@@ -49,7 +52,9 @@ class ChatAdapter(Messages: ArrayList<ChatMessage>, ProfilePic: Bitmap, senderID
             val receivedChatMessage = holder as ReceivedMessageViewHolder   //get the holder as 'ReceivedMessageViewHolder'
             receivedChatMessage.receivedMessageBinding.textMessage.text = chatMessages[position].message
             receivedChatMessage.receivedMessageBinding.textDateTime.text = chatMessages[position].dateTime
-            receivedChatMessage.receivedMessageBinding.profilePic.setImageBitmap(receiverProfilePic)
+            if(receiverProfilePic!=null){
+                receivedChatMessage.receivedMessageBinding.profilePic.setImageBitmap(receiverProfilePic)
+            }
         }
     }
 

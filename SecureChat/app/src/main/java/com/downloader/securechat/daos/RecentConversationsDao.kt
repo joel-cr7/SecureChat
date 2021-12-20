@@ -33,7 +33,7 @@ class RecentConversationsDao {
         conversation.put("SenderImage", cacheStorageManager.getStringValue(Constants.KEY_IMAGE)!!)
         conversation.put("ReceiverId", selectedUser.id)
         conversation.put("ReceiverName", selectedUser.displayName)
-        conversation.put("ReceiverImage", selectedUser.encodedImage)
+        selectedUser.encodedImage?.let { conversation.put("ReceiverImage", it) }
         conversation.put("LastMessage", latestMessage)
         conversation.put("TimeStamp", Date())
         return conversationCollection.add(conversation)

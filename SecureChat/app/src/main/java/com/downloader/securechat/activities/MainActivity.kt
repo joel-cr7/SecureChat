@@ -15,6 +15,7 @@ import com.downloader.securechat.models.RecentConversationChatMessage
 import com.downloader.securechat.models.User
 import com.downloader.securechat.utilities.CacheStorageManager
 import com.downloader.securechat.utilities.Constants
+import com.downloader.securechat.utilities.Security
 import com.google.firebase.firestore.*
 import com.google.firebase.messaging.FirebaseMessaging
 
@@ -122,7 +123,7 @@ class MainActivity : BaseActivity(), RecentConversationsAdapter.onConversationLi
                             val receiverProfilePic =  documentChange.document.getString("ReceiverImage")!!
                             val receiverName =  documentChange.document.getString("ReceiverName")!!
                             val conversationId =  documentChange.document.getString("ReceiverId")!!
-                            val lastMessage = documentChange.document.getString("LastMessage")!!
+                            val lastMessage = Security.AESDecrypt(documentChange.document.getString("LastMessage")!!)
                             val dateObject = documentChange.document.getDate("TimeStamp")!!
 
                             val recentConversationChatMessage = RecentConversationChatMessage(
@@ -143,7 +144,7 @@ class MainActivity : BaseActivity(), RecentConversationsAdapter.onConversationLi
                             val senderProfilePic =  documentChange.document.getString("SenderImage")!!
                             val senderName =  documentChange.document.getString("SenderName")!!
                             val conversationId =  documentChange.document.getString("SenderId")!!
-                            val lastMessage = documentChange.document.getString("LastMessage")!!
+                            val lastMessage = Security.AESDecrypt(documentChange.document.getString("LastMessage")!!)
                             val dateObject = documentChange.document.getDate("TimeStamp")!!
 
                             val recentConversationChatMessage = RecentConversationChatMessage(
@@ -170,7 +171,7 @@ class MainActivity : BaseActivity(), RecentConversationsAdapter.onConversationLi
                             val receiverId = documentChange.document.getString("ReceiverId")
                             if(conversation.senderId == senderId && conversation.receiverId == receiverId){
                                 //updating the latestMessage and its timestamp
-                                conversation.message = documentChange.document.getString("LastMessage")!!
+                                conversation.message = Security.AESDecrypt(documentChange.document.getString("LastMessage")!!)
                                 conversation.dateObject = documentChange.document.getDate("TimeStamp")!!
                                 break
                             }
@@ -194,6 +195,7 @@ class MainActivity : BaseActivity(), RecentConversationsAdapter.onConversationLi
     //get FCM(firebase cloud messaging) token used for messaging
     private fun get_FCM_Token(){
         FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+            cacheStorageManager.setStringValue("fcmToken", token)
             val userDao = UserDao()
             val task = cacheStorageManager.getStringValue(Constants.KEY_USER_ID)?.let { userDao.update_FCM_Token(token, it) }
             Log.d(this.toString(), "getToken: received token: $token")

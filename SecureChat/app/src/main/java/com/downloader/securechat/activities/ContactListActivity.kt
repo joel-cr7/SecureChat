@@ -145,7 +145,7 @@ class ContactListActivity : BaseActivity(), ContactsAdapter.onContactListener {
                         Log.d(this.toString(), "getFirebaseContactList: token is: "+user_token)
                         if(user_name!=null && user_image!=null && user_number!=null){
                             if(user_token==null){
-                                user_FirebaseContacts.add(User(user_name, user_image, user_number, "", document.id))
+                                continue
                             }else{
                                 user_FirebaseContacts.add(User(user_name, user_image, user_number, user_token, document.id))
                             }

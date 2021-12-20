@@ -2,6 +2,7 @@ package com.downloader.securechat.activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.util.Patterns
 import android.view.View
 import android.widget.Toast
@@ -80,7 +81,8 @@ class SignInActivity : AppCompatActivity() {
                 cacheStorageManager.setBooleanValue(Constants.KEY_IS_SIGNED_IN, true)
                 cacheStorageManager.setStringValue(Constants.KEY_USER_ID, documentSnapshot.id)
                 documentSnapshot.getString("Name")?.let { it1 -> cacheStorageManager.setStringValue(Constants.KEY_NAME, it1) }
-                documentSnapshot.getString("Encrypted Image")?.let { it1 -> cacheStorageManager.setStringValue(Constants.KEY_IMAGE, it1) }
+                documentSnapshot.getString("Encrypted Image")?.let { it1 -> cacheStorageManager.setStringValue(Constants.KEY_IMAGE, it1)
+                    Log.d(this.toString(), "SignIn: img at signin "+it1)}
                 startActivity(Intent(applicationContext, MainActivity::class.java))
                 finish()
             }
