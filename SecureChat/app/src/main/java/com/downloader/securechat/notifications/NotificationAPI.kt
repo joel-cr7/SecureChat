@@ -9,7 +9,7 @@ import retrofit2.http.Body
 import retrofit2.http.Headers
 import retrofit2.http.POST
 
-//created for sending notification to firebase server
+//For sending notification to firebase server
 interface NotificationAPI {
 
     @Headers("Authorization: key=$SERVER_KEY", "Content-Type:$CONTENT_TYPE")

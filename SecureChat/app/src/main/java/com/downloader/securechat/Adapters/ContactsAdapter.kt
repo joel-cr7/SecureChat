@@ -17,7 +17,6 @@ class ContactsAdapter(contactList: ArrayList<User>, onContactListener: onContact
     private val contacts: ArrayList<User> = contactList
     private val contactListener: onContactListener = onContactListener
 
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ContactsViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_single_contact, parent, false)
         return ContactsViewHolder(view)
@@ -45,11 +44,9 @@ class ContactsAdapter(contactList: ArrayList<User>, onContactListener: onContact
 
     inner class ContactsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
         val binding = ItemSingleContactBinding.bind(itemView)
-
         init {
-            binding.profilePic.setOnClickListener(this)
+            binding.contactLayout.setOnClickListener(this)
         }
-
         override fun onClick(v: View?) {
             //calling the interface method to handle click on every item
             contactListener.onContactClicked(contacts[adapterPosition])   //get the user at the adapter position

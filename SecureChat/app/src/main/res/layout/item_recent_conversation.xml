@@ -3,13 +3,16 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:padding="@dimen/_8sdp">
+    android:id="@+id/layout"
+    android:background="@drawable/custom_ripple"
+    android:padding="@dimen/_5sdp">
 
     <de.hdodenhof.circleimageview.CircleImageView
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/profile_pic"
         android:layout_width="@dimen/_45sdp"
         android:layout_height="@dimen/_45sdp"
+        android:layout_marginStart="@dimen/_10sdp"
         android:scaleType="centerCrop"
         android:src="@drawable/user_back"
         app:civ_border_width="1dp"
@@ -29,12 +32,13 @@
         android:id="@+id/display_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/_8sdp"
+        android:layout_marginStart="@dimen/_15sdp"
         android:layout_marginEnd="@dimen/_8sdp"
         android:maxLines="1"
         android:ellipsize="end"
         android:textColor="#0051FF"
-        android:textSize="@dimen/_13ssp"
+        android:textStyle="bold"
+        android:textSize="@dimen/_15ssp"
         app:layout_constraintBottom_toTopOf="@+id/view_supporter"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/profile_pic"/>
@@ -43,7 +47,7 @@
         android:id="@+id/recent_message"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/_8sdp"
+        android:layout_marginStart="@dimen/_15sdp"
         android:layout_marginEnd="@dimen/_8sdp"
         android:maxLines="1"
         android:ellipsize="end"

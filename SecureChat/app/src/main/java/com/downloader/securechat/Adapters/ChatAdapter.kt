@@ -27,7 +27,7 @@ class ChatAdapter(Messages: ArrayList<ChatMessage>, ProfilePic: Bitmap, senderID
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        //returning appropriate viewHolders according to the viewType
+        //return appropriate viewHolders according to the viewType
 
         //this is for sender ie. you
         if(viewType == VIEW_TYPE_SENT){
@@ -62,7 +62,6 @@ class ChatAdapter(Messages: ArrayList<ChatMessage>, ProfilePic: Bitmap, senderID
         return chatMessages.size
     }
 
-
     //this is to know from where message is come (sender or receiver). This will be used in 'onCreateViewHolder' as variable 'viewType' to set appropriate viewHolders
     override fun getItemViewType(position: Int): Int {
         if(chatMessages[position].senderId == senderId){
@@ -72,13 +71,10 @@ class ChatAdapter(Messages: ArrayList<ChatMessage>, ProfilePic: Bitmap, senderID
         }
     }
 
-
-
-    //Here there are two viewHolders (for sender and receiver)
+    //Two viewHolders (for sender and receiver)
     inner class SentMessageViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
         val sentMessageBinding = ItemSentMessageBinding.bind(itemView)
     }
-
 
     inner class ReceivedMessageViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
         val receivedMessageBinding = ItemReceivedMessageBinding.bind(itemView)

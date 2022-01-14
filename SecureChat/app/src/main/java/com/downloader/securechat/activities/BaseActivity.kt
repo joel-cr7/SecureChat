@@ -1,7 +1,7 @@
 package com.downloader.securechat.activities
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import com.downloader.securechat.utilities.CacheStorageManager
 import com.downloader.securechat.utilities.Constants
 import com.google.firebase.firestore.DocumentReference

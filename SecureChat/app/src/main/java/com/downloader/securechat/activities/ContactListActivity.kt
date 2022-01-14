@@ -20,8 +20,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 class ContactListActivity : BaseActivity(), ContactsAdapter.onContactListener {
 
     private lateinit var binding: ActivityContactListBinding
-    val usersContacts: HashMap<String, String> = HashMap()  //only users mobile contacts (store name and number in map)
-    val user_FirebaseContacts: ArrayList<User> = ArrayList()   //users saved contacts which are also in firebase
+    val usersContacts: HashMap<String, String> = HashMap()  //users mobile contacts (store name and number in map)
+    val userFirebaseContacts: ArrayList<User> = ArrayList()   //users saved contacts which are also in firebase
     private lateinit var cacheStorageManager: CacheStorageManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,9 +33,7 @@ class ContactListActivity : BaseActivity(), ContactsAdapter.onContactListener {
 
         setListeners()
         checkContactPermission()    //checking if permission is given to access contacts
-
     }
-
 
     private fun setListeners(){
         binding.imageBack.setOnClickListener{
@@ -43,14 +41,10 @@ class ContactListActivity : BaseActivity(), ContactsAdapter.onContactListener {
         }
     }
 
-
-
     private fun showErrorMessage(){
         binding.errorMessage.text = String.format("%s", "No contacts available")
         binding.errorMessage.visibility = View.VISIBLE
     }
-
-
 
     private fun loading(isLoading: Boolean){
         if(isLoading){
@@ -61,22 +55,16 @@ class ContactListActivity : BaseActivity(), ContactsAdapter.onContactListener {
         }
     }
 
-
-
     private fun checkContactPermission() {
         //if permission is not given
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED){
-
             //request permission
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_CONTACTS), 100)
-
         }
         else{
             getMobileContactList()
         }
     }
-
-
 
     //get all contacts from user mobile
     @SuppressLint("Range")
@@ -84,11 +72,10 @@ class ContactListActivity : BaseActivity(), ContactsAdapter.onContactListener {
         loading(true)
         val uri = ContactsContract.Contacts.CONTENT_URI     //initialize URI
         val sort = ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME+" ASC"     // sort in ascending order
-        val cursor = contentResolver.query(uri, null, null, null, sort)   //initilize cursor (cursor points to every contact which is filtered using the query)
+        val cursor = contentResolver.query(uri, null, null, null, sort)   //initialize cursor (cursor points to every contact which is filtered using the query)
         if (cursor != null) {
             if(cursor.count>0){
                 while (cursor.moveToNext()){
-
                     val contactId = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID))   //get contact ID
                     val name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME))  // get contact name
 
@@ -114,9 +101,7 @@ class ContactListActivity : BaseActivity(), ContactsAdapter.onContactListener {
         getFirebaseContactList(usersContacts)
     }
 
-
-
-    //we are getting the users contacts bcz on contactList page we want to only show user the chats of his saved contacts and not chats of all users of firebase
+    //get the users contacts as on 'contactList' page we want to only show user the chats of his saved contacts and not chats of all users of firebase
     //get all contacts from firebase and filter mutual contacts of user and firebase and display them to user
     private fun getFirebaseContactList(usersContacts: HashMap<String, String>) {
         val db = FirebaseFirestore.getInstance()
@@ -127,7 +112,6 @@ class ContactListActivity : BaseActivity(), ContactsAdapter.onContactListener {
             Log.d(this.toString(), "getFirebaseContactList: executed "+it.documents)
             for(document in it){
                 val user_number = document.getString("Phone No")
-
 
                 Log.d(this.toString(), "getFirebaseContactList: phoneno "+user_number)
 
@@ -147,15 +131,14 @@ class ContactListActivity : BaseActivity(), ContactsAdapter.onContactListener {
                             if(user_token==null){
                                 continue
                             }else{
-                                user_FirebaseContacts.add(User(user_name, user_image, user_number, user_token, document.id))
+                                userFirebaseContacts.add(User(user_name, user_image, user_number, user_token, document.id))
                             }
                         }
                     }
                 }
             }
-
-            if(user_FirebaseContacts.size > 0){
-                val contactsAdapter = ContactsAdapter(user_FirebaseContacts, this)
+            if(userFirebaseContacts.size > 0){
+                val contactsAdapter = ContactsAdapter(userFirebaseContacts, this)
                 binding.contactsRecyclerView.adapter = contactsAdapter
                 binding.contactsRecyclerView.visibility = View.VISIBLE
             }
@@ -168,12 +151,8 @@ class ContactListActivity : BaseActivity(), ContactsAdapter.onContactListener {
         }
     }
 
-
-
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-        //check condition
         if(requestCode==100 && grantResults.isNotEmpty() && grantResults[0]==PackageManager.PERMISSION_GRANTED){
             getMobileContactList()
         }
@@ -182,13 +161,12 @@ class ContactListActivity : BaseActivity(), ContactsAdapter.onContactListener {
         }
     }
 
-    //method of interface to handle clicks on each contact in the recyclerview
+    //interface method to handle clicks on contact
     override fun onContactClicked(user: User) {
         val intent = Intent(applicationContext, UserChatActivity::class.java)
         intent.putExtra("user", user)   //passing the user object with intent
         startActivity(intent)
         finish()
     }
-
 
 }

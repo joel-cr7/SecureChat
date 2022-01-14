@@ -32,8 +32,9 @@
         android:layout_marginRight="@dimen/_10sdp"
         android:gravity="center"
         android:layout_marginLeft="@dimen/_10sdp"
+        android:textColor="@color/white"
         android:layout_marginTop="@dimen/_20sdp"
-        android:textSize="@dimen/_13sdp"
+        android:textSize="@dimen/_15sdp"
         app:layout_constraintLeft_toRightOf="@+id/profile_pic"
         app:layout_constraintRight_toLeftOf="@+id/logout"
         app:layout_constraintTop_toTopOf="parent" />
@@ -43,8 +44,11 @@
         android:id="@+id/logout"
         android:layout_width="wrap_content"
         android:textSize="10sp"
+        android:backgroundTint="#FF0000"
         android:layout_marginTop="@dimen/_12sdp"
         android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginEnd="@dimen/_16sdp"
         app:layout_constraintRight_toRightOf="parent"/>
@@ -64,7 +68,7 @@
             android:clipToPadding="false"
             android:overScrollMode="never"
             android:orientation="vertical"
-            android:padding="@dimen/_20sdp"
+            android:padding="@dimen/_15sdp"
             android:visibility="gone"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
 

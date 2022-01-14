@@ -2,7 +2,6 @@ package com.downloader.securechat.models
 
 import java.io.Serializable
 
-
 class User(
         var displayName: String= "",
         var encodedImage: String? = null,

@@ -17,7 +17,6 @@ class RecentConversationsAdapter(recentMessage: ArrayList<RecentConversationChat
     private val recentChatMessage: ArrayList<RecentConversationChatMessage> = recentMessage
     private val conversationListener: onConversationListener = onConversationListener
 
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ConversationsViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_recent_conversation, parent, false)
         return ConversationsViewHolder(view)
@@ -34,16 +33,13 @@ class RecentConversationsAdapter(recentMessage: ArrayList<RecentConversationChat
         return recentChatMessage.size
     }
 
-
     inner class ConversationsViewHolder(itemView: View): RecyclerView.ViewHolder(itemView), View.OnClickListener {
         val binding = ItemRecentConversationBinding.bind(itemView)
-
         init {
-            binding.profilePic.setOnClickListener(this)
+            binding.layout.setOnClickListener(this)
         }
-
         override fun onClick(v: View?) {
-            //calling the interface method to handle click on every item
+            //call the interface method to handle click on every item
             val user = User()
             user.id = recentChatMessage[adapterPosition].conversationId
             user.displayName = recentChatMessage[adapterPosition].conversationName
@@ -57,7 +53,7 @@ class RecentConversationsAdapter(recentMessage: ArrayList<RecentConversationChat
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
     }
 
-    //to handle clicks on each conversation from the main chatActivity
+    //handle clicks on each conversation from chatActivity
     interface onConversationListener {
         fun onConversationClicked(user: User)
     }

@@ -46,7 +46,6 @@ class MainActivity : BaseActivity(), RecentConversationsAdapter.onConversationLi
 
     }
 
-
     private fun initVariables(){
         recentConversations = ArrayList()
         recentConversationsAdapter = RecentConversationsAdapter(recentConversations, this)
@@ -54,37 +53,29 @@ class MainActivity : BaseActivity(), RecentConversationsAdapter.onConversationLi
         database = FirebaseFirestore.getInstance()
     }
 
-
     private fun setListeners(){
-        //logout button
         binding.logout.setOnClickListener{
             signOut()
         }
-
         binding.fabNewContact.setOnClickListener{
             startActivity(Intent(this, ContactListActivity::class.java))
         }
     }
 
-
     private fun showToast(msg: String){
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
 
-
     private fun loadUserDetails(){
         val profilePic = cacheStorageManager.getStringValue(Constants.KEY_IMAGE)?.let { decryptProfilePic(it) }
         binding.profilePic.setImageBitmap(profilePic)
-        binding.name.text = cacheStorageManager.getStringValue(Constants.KEY_NAME)
+        binding.name.text = cacheStorageManager.getStringValue(Constants.KEY_NAME)?.toUpperCase()
     }
-
 
     private fun decryptProfilePic(encryptedProfilePic: String): Bitmap{
         val bytes = Base64.decode(encryptedProfilePic, Base64.DEFAULT)
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
     }
-
-
 
     private fun listenConversationsFromFirestore(){
         //applying listener to both the users ie. both the users chatting
@@ -98,9 +89,7 @@ class MainActivity : BaseActivity(), RecentConversationsAdapter.onConversationLi
 
     }
 
-
-
-    //this listens to any changes in the document (this is to show the users that you have recently chatted with on thr main chatActivity)
+    //listen to any changes in the document (show the users that you have recently chatted with on their main chatActivity)
     inner class changeEventListener : EventListener<QuerySnapshot> {
 
         override fun onEvent(value: QuerySnapshot?, error: FirebaseFirestoreException?) {
@@ -110,7 +99,7 @@ class MainActivity : BaseActivity(), RecentConversationsAdapter.onConversationLi
             if (value != null) {
                 for (documentChange in value.documentChanges){
 
-                    //checking if any 'conversation' is added to firestore
+                    //check if any 'conversation' is added to firestore
                     if(documentChange.type == DocumentChange.Type.ADDED){
 
                         val senderId = documentChange.document.getString("SenderId")!!
@@ -119,7 +108,7 @@ class MainActivity : BaseActivity(), RecentConversationsAdapter.onConversationLi
                         if(cacheStorageManager.getStringValue(Constants.KEY_USER_ID).equals(senderId)){
 
                             //creating the 'recentConversationChatMessage' object and adding to adapter
-                            //below 'receiver' means the person with whom you have chatted
+                            //below 'receiver' is the user with whom you have chatted
                             val receiverProfilePic =  documentChange.document.getString("ReceiverImage")!!
                             val receiverName =  documentChange.document.getString("ReceiverName")!!
                             val conversationId =  documentChange.document.getString("ReceiverId")!!
@@ -139,8 +128,7 @@ class MainActivity : BaseActivity(), RecentConversationsAdapter.onConversationLi
 
                         }
                         else{
-
-                            //creating the 'recentConversationChatMessage' object and adding to adapter
+                            //create the 'recentConversationChatMessage' object and add to adapter
                             val senderProfilePic =  documentChange.document.getString("SenderImage")!!
                             val senderName =  documentChange.document.getString("SenderName")!!
                             val conversationId =  documentChange.document.getString("SenderId")!!
@@ -157,27 +145,20 @@ class MainActivity : BaseActivity(), RecentConversationsAdapter.onConversationLi
                                 senderProfilePic
                             )
                             recentConversations.add(recentConversationChatMessage)
-
                         }
                     }
-
-                    //checking for modifications in 'conversations' document in firestore so that we can show the latest message on main chatActivity
+                    //check for modifications in 'conversations' document in firestore to show latest message chatActivity
                     else if(documentChange.type == DocumentChange.Type.MODIFIED){
-
-                        //looping through the arrayList
                         for(conversation in recentConversations){
-
                             val senderId = documentChange.document.getString("SenderId")
                             val receiverId = documentChange.document.getString("ReceiverId")
                             if(conversation.senderId == senderId && conversation.receiverId == receiverId){
-                                //updating the latestMessage and its timestamp
+                                //update latestMessage and its timestamp
                                 conversation.message = Security.AESDecrypt(documentChange.document.getString("LastMessage")!!)
                                 conversation.dateObject = documentChange.document.getDate("TimeStamp")!!
                                 break
                             }
-
                         }
-
                     }
                 }
 
@@ -189,8 +170,6 @@ class MainActivity : BaseActivity(), RecentConversationsAdapter.onConversationLi
             }
         }
     }
-
-
 
     //get FCM(firebase cloud messaging) token used for messaging
     private fun get_FCM_Token(){
@@ -207,12 +186,10 @@ class MainActivity : BaseActivity(), RecentConversationsAdapter.onConversationLi
         }
     }
 
-
-    //delete the token from the firestore document of the user
+    //delete token from the firestore document of the user
     private fun signOut(){
         val userDao = UserDao()
         val task = cacheStorageManager.getStringValue(Constants.KEY_USER_ID)?.let { userDao.delete_FCM_Token(it) }
-
         if (task != null) {
             task.addOnSuccessListener {
                 cacheStorageManager.clearCache()

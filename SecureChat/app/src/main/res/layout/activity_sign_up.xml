@@ -32,14 +32,12 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="@dimen/_10sdp"
                     android:orientation="horizontal">
-
                     <View
                         android:layout_width="@dimen/_45sdp"
                         android:layout_height="2dp"
                         style="@style/signIn_background_line"
                         android:layout_marginEnd="@dimen/_10sdp"
                         android:layout_gravity="center_vertical"/>
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -47,14 +45,12 @@
                         style="@style/text_theme"
                         android:textStyle="italic"
                         android:textSize="@dimen/_18sdp"/>
-
                     <View
                         android:layout_width="wrap_content"
                         android:layout_height="2dp"
                         android:layout_marginStart="@dimen/_10sdp"
                         style="@style/signIn_background_line"
                         android:layout_gravity="center_vertical"/>
-
                 </LinearLayout>
 
                 <de.hdodenhof.circleimageview.CircleImageView
@@ -74,7 +70,6 @@
             <androidx.coordinatorlayout.widget.CoordinatorLayout
                 android:layout_width="@dimen/_210sdp"
                 android:layout_height="match_parent">
-
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/addImage"
                     android:layout_width="wrap_content"
@@ -82,11 +77,9 @@
                     android:layout_gravity="bottom|right"
                     android:layout_margin="16dp"
                     app:srcCompat="@drawable/add_profile"/>
-
             </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
         </FrameLayout>
-
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/inputName"
@@ -102,7 +95,6 @@
                 android:layout_height="wrap_content"
                 android:importantForAutofill="no"/>
         </com.google.android.material.textfield.TextInputLayout>
-
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/phoneNo"
@@ -120,7 +112,6 @@
                 android:importantForAutofill="no"/>
         </com.google.android.material.textfield.TextInputLayout>
 
-
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/inputEmail"
             android:layout_width="match_parent"
@@ -136,7 +127,6 @@
                 android:layout_height="wrap_content"
                 android:importantForAutofill="no"/>
         </com.google.android.material.textfield.TextInputLayout>
-
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/inputPassword"
@@ -156,7 +146,6 @@
                 android:importantForAutofill="no"/>
         </com.google.android.material.textfield.TextInputLayout>
 
-
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/inputConfirmPassword"
             android:layout_width="match_parent"
@@ -175,26 +164,22 @@
                 android:importantForAutofill="no"/>
         </com.google.android.material.textfield.TextInputLayout>
 
-
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:animateLayoutChanges="true">
-
             <Button
                 android:id="@+id/buttonSignUp"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/_40sdp"
                 android:backgroundTint="#298E4B"
                 android:text="Sign Up" />
-
             <ProgressBar
                 android:id="@+id/progressBar"
                 android:layout_width="@dimen/_20sdp"
                 android:layout_height="@dimen/_20sdp"
                 android:layout_gravity="center"
                 android:visibility="invisible"/>
-
         </FrameLayout>
 
         <TextView
@@ -207,7 +192,6 @@
             android:textSize="@dimen/_12sdp"
             android:textStyle="bold"
             android:text="Already have an account?  Sign In"/>
-
 
         <View
             android:layout_width="@dimen/_183sdp"

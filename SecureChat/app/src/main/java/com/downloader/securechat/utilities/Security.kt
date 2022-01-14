@@ -1,6 +1,5 @@
 package com.downloader.securechat.utilities
 
-import java.lang.Exception
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 
@@ -11,12 +10,11 @@ class Security {
         private val encryptionKey = byteArrayOf(9,115,51,86,105,4,-31,-23,-68,88,17,20,3,-105,119,-53)
         private val cipher: Cipher = Cipher.getInstance("AES")
         private val deCipher: Cipher = Cipher.getInstance("AES")
-        private val secretKeySpec = SecretKeySpec(encryptionKey, "AES")   //using encryptionKey we will create the secret key
+        private val secretKeySpec = SecretKeySpec(encryptionKey, "AES")   //to create the secret key
 
         fun AESEncrypt(plainMessage: String): String{
             val byteString = plainMessage.toByteArray()
             var encodedBytes = ByteArray(byteString.size)
-
             try {
                 cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec)
                 encodedBytes = cipher.doFinal(byteString)
@@ -24,9 +22,7 @@ class Security {
             catch (e: Exception){
                 e.printStackTrace()
             }
-
             val encodedMessage = String(encodedBytes, charset("ISO-8859-1"))
-
             return encodedMessage
         }
 
@@ -41,9 +37,7 @@ class Security {
             catch (e: Exception){
                 e.printStackTrace()
             }
-
             val decodedMessage = String(decodedBytes)
-
             return decodedMessage
         }
     }

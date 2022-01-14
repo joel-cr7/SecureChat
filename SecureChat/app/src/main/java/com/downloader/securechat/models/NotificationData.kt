@@ -1,6 +1,6 @@
 package com.downloader.securechat.models
 
-//mention all values of a single notification
+//All values of a single notification
 data class NotificationData(
     var userId: String,
     var userName: String,

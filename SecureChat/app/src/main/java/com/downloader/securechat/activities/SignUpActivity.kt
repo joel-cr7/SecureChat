@@ -3,9 +3,6 @@ package com.downloader.securechat.activities
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Matrix
-import android.hardware.Camera
-import android.hardware.Camera.CameraInfo
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
@@ -23,8 +20,6 @@ import com.downloader.securechat.utilities.Constants
 import com.google.firebase.auth.FirebaseAuth
 import java.io.ByteArrayOutputStream
 import java.io.FileNotFoundException
-import java.util.Collections.rotate
-
 
 class SignUpActivity : AppCompatActivity() {
 
@@ -37,7 +32,6 @@ class SignUpActivity : AppCompatActivity() {
     private lateinit var password: String
     private lateinit var cacheStorageManager: CacheStorageManager
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySignUpBinding.inflate(layoutInflater)
@@ -47,9 +41,7 @@ class SignUpActivity : AppCompatActivity() {
 
         setTextChanges()
         setListeners()
-
     }
-
 
     //text watchers
     private fun setTextChanges() {
@@ -82,7 +74,6 @@ class SignUpActivity : AppCompatActivity() {
         }
     }
 
-
     private fun encryptImage(bitmap: Bitmap): String{
         val previewWidth = 150
         val previewHeight = bitmap.height * previewWidth / bitmap.width
@@ -93,20 +84,17 @@ class SignUpActivity : AppCompatActivity() {
         return Base64.encodeToString(bytes, Base64.DEFAULT)
     }
 
-
     private fun setListeners(){
         binding.textSignIn.setOnClickListener{
             onBackPressed()
         }
-        
         binding.buttonSignUp.setOnClickListener{
             if(isValidSignUpDetails()){
                 isLoading(true)
                 signUp()
             }
         }
-
-        //to select image for profile pic
+        //select image for profile pic
         binding.addImage.setOnClickListener{
             val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -114,18 +102,15 @@ class SignUpActivity : AppCompatActivity() {
         }
     }
 
-
     private fun showToast(message: String){
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
-
 
     private fun signUp() {
         email = binding.inputEmail.editText?.text.toString().trim()
         password = binding.inputConfirmPassword.editText?.text.toString()
         name = binding.inputName.editText?.text.toString()
         phoneNo = binding.phoneNo.editText?.text.toString()
-
         val userDAO = UserDao()
         val addUserTask = userDAO.addUser(name, email, password, encodedImage, phoneNo)
         addUserTask.addOnSuccessListener {
@@ -153,7 +138,6 @@ class SignUpActivity : AppCompatActivity() {
                 try {
                     val inputStream = userProfileImageUri?.let { it1 -> contentResolver.openInputStream(it1) }
                     val bitmap = BitmapFactory.decodeStream(inputStream)
-
                     binding.profilePic.setImageBitmap(bitmap)
                     encodedImage = encryptImage(bitmap)
                 }catch (e: FileNotFoundException){
@@ -163,15 +147,12 @@ class SignUpActivity : AppCompatActivity() {
         }
     }
 
-
-    //checking validation of data entered
+    //validating the data entered
     private fun isValidSignUpDetails(): Boolean{
-
         if(encodedImage==null){
             showToast("Select Profile Pic!")
             return false
         }
-
         if(binding.inputName.editText?.text.toString().trim().isEmpty()){
             showToast("Enter name")
             binding.inputName.error = "Enter name"
@@ -216,7 +197,6 @@ class SignUpActivity : AppCompatActivity() {
             return true
         }
     }
-
 
     private fun isLoading(loading: Boolean){
         if(loading){

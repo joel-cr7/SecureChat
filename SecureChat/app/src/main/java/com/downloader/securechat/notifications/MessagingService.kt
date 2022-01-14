@@ -10,7 +10,6 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.downloader.securechat.R
 import com.downloader.securechat.activities.MainActivity
-import com.downloader.securechat.activities.UserChatActivity
 import com.downloader.securechat.models.User
 import com.downloader.securechat.utilities.CacheStorageManager
 import com.google.firebase.messaging.FirebaseMessagingService
@@ -22,12 +21,10 @@ private const val CHANNEL_ID = "MyChannelId"
 //Service to receive notifications
 class MessagingService : FirebaseMessagingService() {
 
-    //this companion object is just to set updated token if any of the user ie. your token
+    //To set updated token of the user ie. your token
     companion object{
-
         var sharedPref: CacheStorageManager? = null
-
-        //this is shortcut to get token directly from sharedPreerence and also set it to sharedPreference directly (when we access token get will be called)
+        //To get token directly from sharedPreerence and also set it to sharedPreference directly (when we access token 'get' will be called)
         var token:String?
         get(){
             return sharedPref?.getStringValue("fcmToken")
@@ -37,7 +34,6 @@ class MessagingService : FirebaseMessagingService() {
                 sharedPref?.setStringValue("fcmToken", value)
             }
         }
-
     }
 
     override fun onNewToken(newToken: String) {
@@ -53,14 +49,12 @@ class MessagingService : FirebaseMessagingService() {
         user.displayName = message.data["userName"].toString()
         user.token = message.data["userToken"].toString()
 
-        //this is the main message the notification brings
+        //main message the notification brings
         val mainMessage = message.data["message"]
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-//        val notificationManager = getSystemService(NotificationManager::class.java)
         val intent = Intent(this, MainActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-//        intent.putExtra("user", user)
 
         val notificationID = Random.nextInt()
         val pendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
@@ -75,8 +69,9 @@ class MessagingService : FirebaseMessagingService() {
             .setContentText(mainMessage)
             .setSmallIcon(R.drawable.ic_notifiation)
             .setAutoCancel(true)
+            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             .setContentIntent(pendingIntent)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setStyle(NotificationCompat.BigTextStyle().bigText(mainMessage))
             .build()
 
@@ -84,12 +79,11 @@ class MessagingService : FirebaseMessagingService() {
 
     }
 
-
     //for android Oreo we have to separately create notification channel
     @RequiresApi(Build.VERSION_CODES.O)
     private fun createNotificationChannel(notificationManager: NotificationManager){
         val channelName = "notificationChannel"
-        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val importance = NotificationManager.IMPORTANCE_HIGH
         val channel = NotificationChannel(CHANNEL_ID, channelName, importance).apply {
             description = "This channel is used for chat notification"
         }

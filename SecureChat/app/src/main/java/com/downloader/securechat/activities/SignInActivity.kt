@@ -18,7 +18,6 @@ class SignInActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySignInBinding
     private lateinit var cacheStorageManager: CacheStorageManager
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySignInBinding.inflate(layoutInflater)
@@ -33,9 +32,7 @@ class SignInActivity : AppCompatActivity() {
 
         setTextChanges()
         setListeners()
-
     }
-
 
     //text watchers
     private fun setTextChanges() {
@@ -53,13 +50,11 @@ class SignInActivity : AppCompatActivity() {
         }
     }
 
-
     private fun setListeners(){
         binding.textCreateNewAccount.setOnClickListener{
             val intent = Intent(this, SignUpActivity::class.java)
             startActivity(intent)
         }
-
         binding.buttonSignIn.setOnClickListener{
             if(isValidSignInDetails()){
                 SignIn()
@@ -67,12 +62,10 @@ class SignInActivity : AppCompatActivity() {
         }
     }
 
-
     private fun SignIn(){
         isLoading(true)
         val email = binding.inputEmail.editText?.text.toString().trim()
         val password = binding.inputPassword.editText?.text.toString()
-
         val userDao = UserDao()
         val querySnapshot = userDao.getUser(email, password)
         querySnapshot.addOnCompleteListener{
@@ -93,11 +86,9 @@ class SignInActivity : AppCompatActivity() {
         }
     }
 
-
     private fun showToast(message: String){
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
-
 
     private fun isLoading(loading: Boolean){
         if(loading){
@@ -110,10 +101,8 @@ class SignInActivity : AppCompatActivity() {
         }
     }
 
-
-    //checking validation of data entered
+    //validating the data entered
     private fun isValidSignInDetails(): Boolean{
-
         if(binding.inputEmail.editText?.text.toString().trim().isEmpty()){
             showToast("Enter email")
             binding.inputEmail.error = "Enter email"

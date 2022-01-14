@@ -15,8 +15,7 @@ class RecentConversationsDao {
     private val db = FirebaseFirestore.getInstance()
     private val conversationCollection = db.collection("Conversations")
 
-
-    //this function is to get conversation collection from firestore so that we can show recent conversations on the main chatActivity
+    //Get conversation collection from firestore to show recent conversations on the chatActivity
     fun checkForConversationsRemotely(senderId: String, receiverId: String): Task<QuerySnapshot> {
         return conversationCollection
             .whereEqualTo("SenderId", senderId)
@@ -24,8 +23,7 @@ class RecentConversationsDao {
             .get()
     }
 
-
-    //this function is to add a conversation to firestore
+    //Add a conversation to firestore
     fun addConversations(cacheStorageManager: CacheStorageManager, selectedUser: User, latestMessage: String): Task<DocumentReference> {
         val conversation: HashMap<String, Any> = HashMap()
         conversation.put("SenderId", cacheStorageManager.getStringValue(Constants.KEY_USER_ID)!!)
@@ -43,6 +41,5 @@ class RecentConversationsDao {
         val documentReference = conversationCollection.document(conversationId)
         documentReference.update("LastMessage", latestMessage, "TimeStamp", Date())
     }
-
 
 }

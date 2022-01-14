@@ -1,8 +1,6 @@
 package com.downloader.securechat.daos
 
-import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.QuerySnapshot
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -11,7 +9,7 @@ class ChatDao {
     private val db = FirebaseFirestore.getInstance()
     private val userCollection = db.collection("Chat")
 
-    //add user info ie. (senderId, receiverId, the message sent, timestamp) to database
+    //add user info to database
     fun addMessage(senderId: String, receiverId: String, msg: String, date: Date){
         val message: HashMap<String, Any> = HashMap()
         message["SenderId"] = senderId

@@ -1,8 +1,5 @@
 package com.downloader.securechat.utilities
 
-import android.util.Log
-import kotlin.math.log
-
 class Constants {
     companion object{
         val KEY_COLLECTION_USERS: String = "Users"
@@ -35,18 +32,7 @@ class Constants {
         //for notification
         const val BASE_URL = "https://fcm.googleapis.com"
         const val CONTENT_TYPE = "application/json"
-        const val SERVER_KEY = "AAAA4Gn_pvc:APA91bHNqQmVmKnCBh_BvSiJR0YJ8Wnlezk6whhVX-9n36J-QfWgzjjPR-MAeh_H_rkjDRLuHiIHD4daZXeIKySYFmt-TBwlQesIWZ1fxPAlkZrYc7NKJ_q9Gay-F7hyoBSnmnyZt-t4"
+        const val SERVER_KEY = "ADD_SERVER_KEY_HERE"
 
-        var remoteMsgHeaders: HashMap<String, String>? = null
-
-        fun getMsgHeaders(): HashMap<String, String>{
-            if(remoteMsgHeaders==null){
-                remoteMsgHeaders = HashMap<String, String>()
-                Log.d(this.toString(), "getMsgHeaders: remoteMsgHeaders: "+ remoteMsgHeaders!!)
-                remoteMsgHeaders!![REMOTE_MSG_AUTHORIZATION] = "key=AAAA4Gn_pvc:APA91bHNqQmVmKnCBh_BvSiJR0YJ8Wnlezk6whhVX-9n36J-QfWgzjjPR-MAeh_H_rkjDRLuHiIHD4daZXeIKySYFmt-TBwlQesIWZ1fxPAlkZrYc7NKJ_q9Gay-F7hyoBSnmnyZt-t4"
-                remoteMsgHeaders!![REMOTE_MSG_CONTENT_TYPE] = "application/json"
-            }
-            return remoteMsgHeaders as HashMap<String, String>
-        }
     }
 }
