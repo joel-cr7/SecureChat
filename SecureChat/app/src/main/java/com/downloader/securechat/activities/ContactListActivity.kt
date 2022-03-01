@@ -17,6 +17,7 @@ import com.downloader.securechat.models.User
 import com.downloader.securechat.utilities.CacheStorageManager
 import com.google.firebase.firestore.FirebaseFirestore
 
+
 class ContactListActivity : BaseActivity(), ContactsAdapter.onContactListener {
 
     private lateinit var binding: ActivityContactListBinding
@@ -81,12 +82,21 @@ class ContactListActivity : BaseActivity(), ContactsAdapter.onContactListener {
 
                     val phoneURI = ContactsContract.CommonDataKinds.Phone.CONTENT_URI   //initialize phone URI
                     val selection = ContactsContract.CommonDataKinds.Phone.CONTACT_ID+" =?"   //mention selection criteria
-                    val phoneCursor = contentResolver.query(phoneURI, null, selection, arrayOf(contactId), null)
+                    val phoneCursor = contentResolver.query(
+                        phoneURI, null, selection, arrayOf(
+                            contactId
+                        ), null
+                    )
 
                     if (phoneCursor != null) {
                         if(phoneCursor.moveToNext()){
-                            var phone_no = phoneCursor.getString(phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
+                            var phone_no = phoneCursor.getString(
+                                phoneCursor.getColumnIndex(
+                                    ContactsContract.CommonDataKinds.Phone.NUMBER
+                                )
+                            )
                             phone_no = phone_no.replace("\\s".toRegex(), "")
+                            phone_no = phone_no.replace("-", "")
                             phone_no = phone_no.replace("+91", "")
                             phone_no = phone_no.trim()
                             usersContacts[name] = phone_no
@@ -109,29 +119,43 @@ class ContactListActivity : BaseActivity(), ContactsAdapter.onContactListener {
         userCollection.get().addOnSuccessListener {
             loading(false)
             //iterate through all the users documents one by one
-            Log.d(this.toString(), "getFirebaseContactList: executed "+it.documents)
+            Log.d(this.toString(), "getFirebaseContactList: executed " + it.documents)
             for(document in it){
                 val user_number = document.getString("Phone No")
 
-                Log.d(this.toString(), "getFirebaseContactList: phoneno "+user_number)
+                Log.d(this.toString(), "getFirebaseContactList: phoneno " + user_number)
 
                 //iterate through every contact of local storage of user
                 for (contact in usersContacts) {
                     val key = contact.key
-                    Log.d(this.toString(), "getFirebaseContactList: the key is : "+key+" value is :"+usersContacts[key])
+                    Log.d(
+                        this.toString(),
+                        "getFirebaseContactList: the key is : " + key + " value is :" + usersContacts[key]
+                    )
 
                     //compare phone no. of users contacts and phone no. of firebase if both are same put it in an arraylist and display to user
                     if (usersContacts[key] == user_number) {
                         val user_name = document.getString("Name")
                         val user_image = document.getString("Encrypted Image")
-                        Log.d(this.toString(), "getFirebaseContactList: match found "+usersContacts[key])
+                        Log.d(
+                            this.toString(),
+                            "getFirebaseContactList: match found " + usersContacts[key]
+                        )
                         val user_token = document.getString("fcmToken")
-                        Log.d(this.toString(), "getFirebaseContactList: token is: "+user_token)
+                        Log.d(this.toString(), "getFirebaseContactList: token is: " + user_token)
                         if(user_name!=null && user_image!=null && user_number!=null){
                             if(user_token==null){
                                 continue
                             }else{
-                                userFirebaseContacts.add(User(user_name, user_image, user_number, user_token, document.id))
+                                userFirebaseContacts.add(
+                                    User(
+                                        user_name,
+                                        user_image,
+                                        user_number,
+                                        user_token,
+                                        document.id
+                                    )
+                                )
                             }
                         }
                     }
@@ -151,7 +175,11 @@ class ContactListActivity : BaseActivity(), ContactsAdapter.onContactListener {
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if(requestCode==100 && grantResults.isNotEmpty() && grantResults[0]==PackageManager.PERMISSION_GRANTED){
             getMobileContactList()
