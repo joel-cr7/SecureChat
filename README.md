@@ -21,15 +21,15 @@ The concept's and libraries that are used for developing this app are:<br />
 ## UI
 <table>
   <tr>
-    <td><img src="App%20Screenshots/SecureChat1.png" width=600 height=440></td>
-    <td><img src="App%20Screenshots/SecureChat2.png" width=600 height=440></td>
+    <td><img src="App%20Screenshots/SecureChat1.png" width=350 height=640></td>
+    <td><img src="App%20Screenshots/SecureChat2.png" width=350 height=640></td>
   </tr>
  </table>
  
  <table>
   <tr>
-    <td><img src="App%20Screenshots/SecureChat3.png" width=600 height=440></td>
-    <td><img src="App%20Screenshots/SecureChat4.png" width=600 height=440></td>
+    <td><img src="App%20Screenshots/SecureChat3.png" width=350 height=640></td>
+    <td><img src="App%20Screenshots/SecureChat4.png" width=350 height=640></td>
   </tr>
  </table>
  
