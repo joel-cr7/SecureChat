@@ -15,7 +15,7 @@ The concept's and libraries that are used for developing this app are:<br />
    &nbsp;&nbsp;&nbsp;&nbsp;   1] Firebase Firestore – Firestore is a cloud-hosted, NoSQL database.<br />
    &nbsp;&nbsp;&nbsp;&nbsp;   2] Shared Preferences -  A way to store and retrieve small amounts of data as key/value pairs.<br />
    &nbsp;&nbsp;&nbsp;&nbsp;   3] Push Notification in Android using Firebase. <br />
-   &nbsp;&nbsp;&nbsp;&nbsp;   4] Retrofit - A type-safe REST client used for making API calls, which aims to make it easier to consume RESTful web services.<br />
+   &nbsp;&nbsp;&nbsp;&nbsp;   4] Retrofit - REST client used for making API calls, which aims to make it easier to consume RESTful web services.<br />
    
    
 ## UI
@@ -23,6 +23,11 @@ The concept's and libraries that are used for developing this app are:<br />
   <tr>
     <td><img src="App%20Screenshots/SecureChat1.png" width=600 height=440></td>
     <td><img src="App%20Screenshots/SecureChat2.png" width=600 height=440></td>
+  </tr>
+ </table>
+ 
+ <table>
+  <tr>
     <td><img src="App%20Screenshots/SecureChat3.png" width=600 height=440></td>
     <td><img src="App%20Screenshots/SecureChat4.png" width=600 height=440></td>
   </tr>
